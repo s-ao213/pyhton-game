@@ -136,4 +136,6 @@ while not running:
             sys.exit()
         if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
             board = [[0] * SCREEN_WIDTH for _ in range(SCREEN_HEIGHT)]  # ボードをリセット
-            running = True  # ゲームを再開
+            running = True  # ゲームを
+
+            print("お試し")
