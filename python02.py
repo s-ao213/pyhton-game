@@ -211,7 +211,7 @@ while running:
 
 
     # 次のテトリミノを描画
-    margin_x, margin_y = 1, 1  # マージンを設定
+    margin_x, margin_y = 2, 2 # マージンを設定
     tetromino_width = len(next_tetromino[0])  # テトリミノの幅を取得
     small_block_size = BLOCK_SIZE // 2  # ブロックサイズを半分にする
     for dx, row in enumerate(next_tetromino):
@@ -255,12 +255,60 @@ while running:
                         BORDER_WIDTH)
     #画面の更新
     pygame.display.flip()
+
+        # ゲームオーバー判定
+    if check_game_over():
+        running = False
+        game_over = True  # ゲームオーバーフラグを追加
+    else:
+        game_over = False
+
+    # 画面の更新
+    pygame.display.flip()
+
+# ゲームオーバー時の処理
+if game_over:
+    # 半透明のオーバーレイを描画
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    overlay.set_alpha(128)  # 半透明度を設定（0〜255）
+    overlay.fill((0, 0, 0))  # 黒色で塗りつぶし
+    screen.blit(overlay, (0, 0))  # オーバーレイを画面に描画
+
+    # ゲームオーバーテキストのフォントサイズを大きくする
+    game_over_font = pygame.font.Font(None, 72)  # フォントサイズを72に設定
+    score_font = pygame.font.Font(None, 48)  # スコアのフォントサイズを48に設定
+
+    # ゲームオーバーテキストを描画（影付き）
+    game_over_text = game_over_font.render("GAME OVER", True, (0, 0, 0))
+    text_rect = game_over_text.get_rect(center=(SCREEN_WIDTH / 2 + 2, SCREEN_HEIGHT / 2 - 50 + 2))
+    screen.blit(game_over_text, text_rect)  # 影を描画
+
+    game_over_text = game_over_font.render("GAME OVER", True, (255, 0, 0))
+    text_rect = game_over_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 50))
+    screen.blit(game_over_text, text_rect)  # テキストを描画
+
+    # スコアテキストを描画
+    score_text = score_font.render(f"Score: {score}", True, (255, 255, 255))
+    score_rect = score_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50))
+    screen.blit(score_text, score_rect)
+
+    # 画面の更新
+    pygame.display.flip()
+
+    # ゲームオーバーのまま待機
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:  # もしESCキーが押されたら終了
+                    pygame.quit()
+                    sys.exit()
+
     
     clock.tick(60)
 
 pygame.quit()
 sys.exit()
 
-
-# 速度落とす
-# ブロックの向き変える
