@@ -117,9 +117,7 @@ for dx, row in enumerate(preview_tetromino):
         if cell != 0:
             pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(SCREEN_WIDTH + dx * 30, 100 + dy * 30, 30, 30))
 
-# ゲームオーバー
-
-判定
+# ゲームオーバー判定
 if any(cell != 0 for cell in board[0]):
     running = False
 

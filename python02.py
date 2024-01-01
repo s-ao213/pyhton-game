@@ -8,6 +8,14 @@ pygame.init()
 # 画面の大きさ
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("テトリス")
+
+# 日本語フォントのパス
+font_path = "C:/Windows/Fonts/meiryo.ttc"  # Windowsの例
+
+# 日本語対応のフォントをロード
+japanese_font = pygame.font.Font(font_path, 36)
 
 #ゲーム画面の大きさ
 GAME_WIDTH = 10
@@ -122,6 +130,19 @@ def rotate_tetromino_right(tetromino):
     transposed = [list(x) for x in zip(*tetromino)]
     # 各列を逆順にして右回転させる
     return transposed[::-1]
+
+# ゲームをリセットする関数
+def reset_game():
+    global board, current_tetromino, current_color, next_tetromino, next_color, x, y, score, last_fall_time, game_over
+    board = [[0] * GAME_WIDTH for _ in range(GAME_HEIGHT)]
+    current_tetromino = random.choice(tetrominoes)
+    current_color = random.choice(tetromino_colors)
+    next_tetromino = random.choice(tetrominoes)
+    next_color = random.choice(tetromino_colors)
+    x, y = 3, 0
+    score = 0
+    last_fall_time = pygame.time.get_ticks()
+    game_over = False
 
 # ゲームループ
 while running:
@@ -295,16 +316,29 @@ if game_over:
     # 画面の更新
     pygame.display.flip()
 
-    # ゲームオーバーのまま待機
-    while True:
+    # 「Enterキーを押してリトライ」というメッセージを表示（日本語フォント使用）
+    retry_text = japanese_font.render("Enterキーを押してリトライ", True, (255, 255, 255))
+    retry_rect = retry_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 100))
+    screen.blit(retry_text, retry_rect)
+
+    # 画面の更新
+    pygame.display.flip()
+
+    # プレイヤーの入力を待つ
+    waiting_for_input = True
+    while waiting_for_input:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:  # もしESCキーが押されたら終了
+                if event.key == pygame.K_ESCAPE:  # ESCキーが押されたら終了
                     pygame.quit()
                     sys.exit()
+                elif event.key == pygame.K_RETURN:  # Enterキーが押されたらゲームをリセット
+                    reset_game()
+                    waiting_for_input = False
+
 
     
     clock.tick(60)
@@ -312,3 +346,4 @@ if game_over:
 pygame.quit()
 sys.exit()
 
+#えんたーを押すとリトライされるようにして、文字の表示まではいけた
