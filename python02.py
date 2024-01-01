@@ -81,6 +81,9 @@ board = [[0] * GAME_WIDTH for _ in range(GAME_HEIGHT)]
 # 前回のスコアを保持する変数
 last_score = 0
 
+# ゲーム開始時刻
+start_time = pygame.time.get_ticks()
+
 # 衝突判定
 def check_collision(x, y, tetromino):
     for dx, row in enumerate(tetromino):
