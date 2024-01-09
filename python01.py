@@ -328,6 +328,8 @@ while True:
     # ゲームオーバー時の処理
     if game_over:
         # クリア条件のチェック（スコアが1000以上で、残り時間が0）
+        clear = score >= 1000 and remaining_time == 0  # クリア条件を定義
+
         if clear:
             # クリア画面の表示
             overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -342,6 +344,7 @@ while True:
             clear_text = clear_font.render("CLEAR!", True, (0, 0, 128))  # 青色でテキストを設定
             text_rect = clear_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
             screen.blit(clear_text, text_rect)  # テキストを描画
+
 
         else:
             # 半透明のオーバーレイを描画
@@ -368,6 +371,12 @@ while True:
         score_rect = score_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50))
         screen.blit(score_text, score_rect)
 
+        # 「エスクで閉じる」テキストを描画
+        exit_text = japanese_font.render("escキーで閉じる", True, (255, 255, 255))
+        exit_rect = exit_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 100))
+        screen.blit(exit_text, exit_rect)
+
+
         # 画面の更新
         pygame.display.flip()
 
@@ -382,14 +391,10 @@ while True:
                     if event.key == pygame.K_ESCAPE:  # ESCキーが押されたら終了
                         pygame.quit()
                         sys.exit()
-                    elif event.key == pygame.K_RETURN:  # Enterキーが押されたらゲームをリセット
-                        reset_game()
-                        waiting_for_input = False
-                        break  # イベントループを抜ける
-        clock.tick(60)
+            clock.tick(60)
 
-        # 画面の更新
-        pygame.display.flip()
+    # 画面の更新
+    pygame.display.flip()
 
     pygame.quit()
     sys.exit()
