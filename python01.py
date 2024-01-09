@@ -145,20 +145,19 @@ def rotate_tetromino_right(tetromino):
 
 # ゲームをリセットする関数
 def reset_game():
-    global board, current_tetromino, current_color, next_tetromino, next_color, x, y, score, last_fall_time, game_over, running,  last_score
+    global board, current_tetromino, current_color, next_tetromino, next_color, x, y, score, last_fall_time, game_over, running, last_score, game_start_time, fall_time
     last_score = score  # 現在のスコアを last_score に保存
     board = [[0] * GAME_WIDTH for _ in range(GAME_HEIGHT)]
     current_tetromino = random.choice(tetrominoes)
     current_color = random.choice(tetromino_colors)
     next_tetromino = random.choice(tetrominoes)
-    next_color = random.choice(tetromino_colors)
-    x, y = 3, 0
-    score = 0
-    last_fall_time = pygame.time.get_ticks()
-    game_over = False
+    # next_color = random.choice(tetromino_colors)
+    # x, y = 3, 0  # テトリミノの初期位置を設定
+    score = 0  # スコアをリセット
+    last_fall_time = pygame.time.get_ticks()  # 最後にブロックが落下した時刻をリセット
+    game_over = False  # ゲームオーバー状態をリセット
+    running = True  # ゲームループを再開させる
     game_start_time = pygame.time.get_ticks()  # ゲーム開始時刻をリセット
-    running = True  # グローバル変数の running を True に設定
-
 # ゲームループ
 while True:
     while running:
@@ -376,7 +375,10 @@ while True:
         exit_rect = exit_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 100))
         screen.blit(exit_text, exit_rect)
 
-
+        # 「エンターキーでリトライ」テキストを描画
+        retry_text = japanese_font.render("エンターキーでリトライ", True, (255, 255, 255))
+        retry_rect = retry_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150))
+        screen.blit(retry_text, retry_rect)
         # 画面の更新
         pygame.display.flip()
 
@@ -391,7 +393,15 @@ while True:
                     if event.key == pygame.K_ESCAPE:  # ESCキーが押されたら終了
                         pygame.quit()
                         sys.exit()
-            clock.tick(60)
+                    elif event.key == pygame.K_RETURN:  # Enterキーが押されたらリトライ
+                        reset_game()
+                        running = True  # ゲームループを再開させる
+                        screen.fill((255, 255, 255))  # 画面を白で塗りつぶす
+                        pygame.display.flip()  # 画面を更新
+                        waiting_for_input = False
+
+        # ゲームループの先頭に戻る
+        continue
 
     # 画面の更新
     pygame.display.flip()
