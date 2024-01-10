@@ -109,6 +109,38 @@ def place_tetromino(x, y, tetromino, color):
 def check_game_over():
     return any(cell != 0 for cell in board[0])
 
+def rotate_tetromino(tetromino, clockwise=True):
+    if clockwise:
+        # テトリミノを時計回りに90度回転
+        return [list(row)[::-1] for row in zip(*tetromino)]
+    else:
+        # テトリミノを反時計回りに90度回転
+        return [list(row) for row in zip(*reversed(tetromino))]
+
+def valid_position(x, y, tetromino):
+    for dx, row in enumerate(tetromino):
+        for dy, cell in enumerate(row):
+            if cell != 0:
+                if x + dy < 0 or x + dy >= GAME_WIDTH or y + dx >= GAME_HEIGHT or board[y + dx][x + dy] != 0:
+                    return False
+    return True
+
+def adjust_position(x, y, tetromino):
+    # 左に調整する
+    while not valid_position(x, y, tetromino) and x > 0:
+        x -= 1
+    # 右に調整する
+    while not valid_position(x, y, tetromino) and x < GAME_WIDTH - 1:
+        x += 1
+    return x, y
+
+def rotate_tetromino_if_valid(x, y, tetromino, clockwise=True):
+    rotated = rotate_tetromino(tetromino, clockwise)
+    new_x, new_y = adjust_position(x, y, rotated)
+    if valid_position(new_x, new_y, rotated):
+        return new_x, new_y, rotated
+    return x, y, tetromino  # 回転できない場合は元の位置と形状を返す
+
 # ゲームループ
 running = True
 clock = pygame.time.Clock()
@@ -126,22 +158,6 @@ rotate = True
 # ゲーム開始時のタイマー設定（2分間）
 GAME_DURATION = 120000  # 2分間をミリ秒単位で設定
 game_start_time = pygame.time.get_ticks()  # ゲーム開始時刻を取得
-
-# ブロックの回転
-def rotate_tetromino(tetromino):
-    return [list(x)[::-1] for x in zip(*tetromino)]
-
-def rotate_tetromino_left(tetromino):
-    # テトリミノを転置（行と列を入れ替える）
-    transposed = [list(x) for x in zip(*tetromino)]
-    # 各行を逆順にして左回転させる
-    return [row[::-1] for row in transposed]
-
-def rotate_tetromino_right(tetromino):
-    # テトリミノを転置（行と列を入れ替える）
-    transposed = [list(x) for x in zip(*tetromino)]
-    # 各列を逆順にして右回転させる
-    return transposed[::-1]
 
 # ゲームをリセットする関数
 def reset_game():
@@ -165,24 +181,30 @@ while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 current_time = pygame.time.get_ticks()
                 if event.key == pygame.K_RETURN:  # Enterキーが押されたとき
                     last_fall_time = current_time  # 最後にブロックが落下した時刻を更新
                     drop = True
-                    rotate = False
-                else:
-                    if rotate:
-                        if event.key == pygame.K_UP:
-                            current_tetromino = rotate_tetromino_left(current_tetromino)
-                        elif event.key == pygame.K_DOWN:
-                            current_tetromino = rotate_tetromino_right(current_tetromino)
-                    if event.key == pygame.K_RIGHT:  # 右矢印キーが押されたとき
-                        if not check_collision(x + 1, y, current_tetromino):  # 壁や他のブロックとの衝突を確認
-                            x += 1
-                    elif event.key == pygame.K_LEFT:  # 左矢印キーが押されたとき
-                        if not check_collision(x - 1, y, current_tetromino):  # 壁や他のブロックとの衝突を確認
-                            x -= 1
+                    # rotate = False  # rotate フラグの設定が必要な場合はここで行う
+                # 上矢印キーが押されたときの処理
+                elif event.key == pygame.K_UP:
+                    new_x, new_y, new_tetromino = rotate_tetromino_if_valid(x, y, current_tetromino, clockwise=True)
+                    if not check_collision(new_x, new_y, new_tetromino):
+                        x, y, current_tetromino = new_x, new_y, new_tetromino
+                # 下矢印キーが押されたときの処理
+                elif event.key == pygame.K_DOWN:
+                    new_x, new_y, new_tetromino = rotate_tetromino_if_valid(x, y, current_tetromino, clockwise=False)
+                    if not check_collision(new_x, new_y, new_tetromino):
+                        x, y, current_tetromino = new_x, new_y, new_tetromino
+                # 右矢印キーが押されたときの処理
+                elif event.key == pygame.K_RIGHT:
+                    if not check_collision(x + 1, y, current_tetromino):
+                        x += 1
+                # 左矢印キーが押されたときの処理
+                elif event.key == pygame.K_LEFT:
+                    if not check_collision(x - 1, y, current_tetromino):
+                        x -= 1
 
         # 残り時間の計算
         current_time = pygame.time.get_ticks()
